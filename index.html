@@ -421,18 +421,21 @@ function renderClientMeeting(){
       status.textContent = /too many/.test(error.message) ? "רגע, שלחת כמה פעמים ברצף. נסי שוב בעוד דקה." : "משהו השתבש בשליחה. בדקי את החיבור לאינטרנט ונסי שוב.";
       return;
     }
+    const waUrl = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(
+      "היי טוהר, זאת " + (C.name || "") + " 🤍\nעדכנתי במערכת את המעקב של פגישה " + m.n + ".");
     box.innerHTML = "";
     const t = el("div", "thanks");
-    t.innerHTML = '<h3>העדכון נשלח לטוהר ✔</h3><p>תודה ששיתפת 🤍 רוצה שטוהר תדע כבר עכשיו?</p>';
-    const wa = el("a", "btn wa big", "לעדכן את טוהר בוואטסאפ");
-    wa.href = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent("היי טוהר, עדכנתי את המעקב של פגישה " + m.n + " 🤍");
-    wa.target = "_blank"; wa.rel = "noopener";
+    t.innerHTML = '<h3>העדכון נשמר במערכת ✔</h3><p>עכשיו נפתח וואטסאפ עם הודעה לטוהר. רק ללחוץ שם "שליחה" 🤍</p>';
+    const wa = el("a", "btn wa big", "פתיחת הוואטסאפ לטוהר");
+    wa.href = waUrl;
     const again = el("button", "link-btn", "חזרה לעדכון");
     again.style.display = "block"; again.style.margin = "14px auto 0";
     again.addEventListener("click", clientMode);
     t.append(wa, again);
     box.appendChild(t);
     t.scrollIntoView({ behavior: "smooth", block: "center" });
+    // open WhatsApp on its own; the button stays in case the browser blocks it
+    setTimeout(() => { location.href = waUrl; }, 1200);
   });
 }
 
