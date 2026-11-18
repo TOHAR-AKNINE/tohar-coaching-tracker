@@ -1,6 +1,6 @@
 // Keeps the follow-up system working without internet.
 // Bump VERSION whenever index.html changes so phones pick up the new copy.
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = "coaching-tracker-" + VERSION;
 const FILES = [
   "./",
@@ -9,6 +9,7 @@ const FILES = [
   "icon-192.png",
   "icon-512.png",
   "manifest.json",
+  "lib/supabase.js",
   "fonts/assistant-hebrew.woff2",
   "fonts/assistant-latin.woff2"
 ];
