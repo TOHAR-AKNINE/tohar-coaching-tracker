@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ליווי ומעקב · טוהר אקנין</title>
+<link rel="icon" type="image/jpeg" href="logo.jpg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F2A44">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  /* Assistant is stored next to the page so it also works offline */
+  @font-face{font-family:'Assistant';font-style:normal;font-weight:400 800;font-display:swap;
+    src:url(fonts/assistant-hebrew.woff2) format('woff2');
+    unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+  @font-face{font-family:'Assistant';font-style:normal;font-weight:400 800;font-display:swap;
+    src:url(fonts/assistant-latin.woff2) format('woff2');
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  :root{
+    --white:#FFFFFF;
+    --paper:#F8F5F0;
+    --navy:#1F2A44;
+    --navy-soft:#2E3D5F;
+    --navy-tint:#E8ECF4;
+    --brown:#5C3317;
+    --caramel:#9A5B2C;
+    --sand:#D9C7AE;
+    --espresso:#2A1A10;
+    --black:#141414;
+    --ink-soft:#5A5048;
+    --green:#3B6D11;
+    --err:#A0402A;
+    --radius:16px;
+    --shadow:0 10px 28px rgba(31,42,68,.10), 0 2px 8px rgba(31,42,68,.06);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none !important}
+  body{font-family:'Assistant',sans-serif;background:var(--paper);color:var(--black);min-height:100dvh;font-size:16px;font-weight:600}
+  button{font-family:inherit;cursor:pointer}
+  :focus-visible{outline:3px solid var(--caramel);outline-offset:2px}
+
+  /* ---------- top bar ---------- */
+  .topbar{position:sticky;top:0;z-index:20;background:var(--navy);color:var(--white);box-shadow:0 4px 18px rgba(20,20,20,.18)}
+  .topbar-row{display:flex;align-items:center;gap:14px;padding:10px 18px;max-width:1100px;margin:0 auto}
+  .brand{width:42px;height:42px;border-radius:10px;border:2px solid var(--caramel);object-fit:cover;flex:0 0 42px}
+  .who{display:flex;flex-direction:column;min-width:0}
+  .who strong{font-size:1.2rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .who span{font-size:.9rem;color:#C9D1E3;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .spacer{flex:1}
+  .icon-btn{background:rgba(255,255,255,.12);color:var(--white);border:none;border-radius:999px;padding:8px 14px;font-weight:800;font-size:.92rem}
+  .icon-btn:hover{background:rgba(255,255,255,.22)}
+  .goal-bar{background:var(--brown);border-top:3px solid var(--caramel)}
+  .goal-bar .inner{max-width:1100px;margin:0 auto;padding:9px 18px;display:flex;gap:10px;align-items:baseline}
+  .goal-bar .label{font-weight:800;color:#F3DDBB;white-space:nowrap;font-size:.95rem}
+  .goal-bar .text{font-weight:700;font-size:1.08rem;color:var(--white)}
+  .goal-bar .text.empty{color:#E6CDB5;font-weight:600;font-style:italic}
+
+  /* ---------- page ---------- */
+  .page{max-width:1100px;margin:0 auto;padding:22px 18px 60px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin:8px 0 6px;flex-wrap:wrap}
+  .sec-head h2{font-size:1.9rem;font-weight:800;color:var(--espresso)}
+  .sec-intro{color:var(--ink-soft);font-weight:700;font-size:1.05rem;margin-bottom:16px;line-height:1.6}
+  .card{background:var(--white);border:2px solid var(--sand);border-right:7px solid var(--brown);border-radius:var(--radius);padding:20px 18px;margin-bottom:14px}
+  .card.private{border-color:#C9D1E3;border-right-color:var(--navy);background:#F5F7FB}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .field:last-child{margin-bottom:0}
+  .field label{font-weight:800;color:var(--espresso);font-size:1.12rem;line-height:1.45}
+  .hint{font-weight:700;color:var(--ink-soft);font-size:.9rem}
+  input[type=text],input[type=date],input[type=tel],textarea{
+    font-family:'Assistant',sans-serif;font-size:17px;font-weight:600;
+    width:100%;padding:11px 13px;border:2px solid var(--sand);border-radius:12px;
+    background:var(--white);color:var(--black);line-height:1.55;
+  }
+  textarea{min-height:76px;resize:none;overflow:hidden}
+  input:focus,textarea:focus{outline:none;border-color:var(--brown);box-shadow:0 0 0 3px rgba(92,51,23,.12)}
+  .guide-q{border-right:5px solid var(--caramel);padding-right:14px}
+  .private-tag{display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:var(--white);border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:700;margin-inline-start:8px;vertical-align:middle}
+  .decision{background:var(--navy);color:var(--white);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .decision label{color:#F3DDBB !important}
+  .decision textarea{border-color:var(--navy-soft);font-weight:700}
+  .btn{border:none;border-radius:999px;padding:12px 24px;font-weight:800;font-size:1rem;background:var(--navy);color:var(--white);box-shadow:var(--shadow);display:inline-flex;align-items:center;gap:8px}
+  .btn:hover{background:var(--navy-soft)}
+  .btn.brown{background:linear-gradient(135deg,var(--brown),var(--espresso))}
+  .btn.ghost{background:var(--white);color:var(--navy);border:2px solid var(--navy);box-shadow:none}
+  .btn.big{font-size:1.15rem;padding:16px 30px}
+  .link-btn{background:none;border:none;color:var(--ink-soft);font-weight:700;font-size:.9rem;text-decoration:underline;text-underline-offset:3px}
+  .link-btn:hover{color:var(--err)}
+  .chip{border:2px dashed var(--caramel);background:var(--white);color:var(--brown);border-radius:999px;padding:8px 16px;font-weight:800;font-size:1rem}
+  .empty-note{color:var(--ink-soft);font-weight:700;padding:8px 2px;font-size:1.05rem}
+  details.client-details summary{cursor:pointer;font-weight:800;font-size:1.05rem;color:var(--brown);list-style:none;display:flex;align-items:center;gap:8px}
+  details.client-details summary::before{content:"▸";transition:transform .2s}
+  details.client-details[open] summary::before{transform:rotate(90deg)}
+  details.client-details[open] summary{margin-bottom:14px}
+
+  /* ---------- timeline ---------- */
+  .timeline{display:flex;align-items:flex-start;overflow-x:auto;padding:8px 2px 16px;margin-bottom:8px}
+  .tl-dot{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;min-width:92px;flex:0 0 auto}
+  .tl-dot .c{width:48px;height:48px;border-radius:50%;border:3px solid var(--brown);background:var(--brown);color:var(--white);font-weight:800;font-size:1.2rem;display:flex;align-items:center;justify-content:center}
+  .tl-dot.active .c{background:var(--espresso);border-color:var(--espresso);box-shadow:0 0 0 5px #F3DDBB}
+  .tl-dot .l{font-weight:800;font-size:.95rem;color:var(--espresso)}
+  .tl-dot .d{font-weight:700;font-size:.8rem;color:var(--ink-soft)}
+  .tl-dot.add .c{background:var(--white);border-style:dashed;border-color:var(--caramel);color:var(--caramel);font-size:1.5rem}
+  .tl-line{width:36px;height:4px;border-radius:4px;background:var(--brown);margin-top:22px;flex:0 0 auto}
+
+  /* ---------- meeting ---------- */
+  .meeting-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .meeting-head h3{font-size:1.8rem;font-weight:800;color:var(--espresso)}
+  .meeting-head input{width:auto}
+  .meeting-head .link-btn{margin-inline-start:auto}
+  .goal-progress{display:flex;align-items:center;gap:12px;margin:4px 0 10px;font-weight:800;color:var(--brown)}
+  .goal-progress .bar{flex:1;height:14px;background:var(--sand);border-radius:99px;overflow:hidden}
+  .goal-progress .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--caramel),var(--brown));transition:width .3s}
+  .goal-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 0;border-bottom:2px solid var(--paper)}
+  .goal-row input{flex:1;min-width:200px}
+  .state{display:flex;gap:4px}
+  .state button{border:2px solid var(--sand);background:var(--white);border-radius:999px;padding:5px 11px;font-weight:800;font-size:.86rem;color:var(--ink-soft)}
+  .state button.on[data-s="todo"]{background:var(--ink-soft);border-color:var(--ink-soft);color:var(--white)}
+  .state button.on[data-s="doing"]{background:var(--caramel);border-color:var(--caramel);color:var(--white)}
+  .state button.on[data-s="done"]{background:var(--green);border-color:var(--green);color:var(--white)}
+
+  /* ---------- files ---------- */
+  .drop{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:3px dashed var(--caramel);border-radius:var(--radius);padding:16px;background:#FBF7F0}
+  .drop.over{background:#F3E6D8;border-color:var(--brown)}
+  .file-row{margin-top:12px;border:2px solid var(--sand);border-radius:12px;overflow:hidden;background:var(--white)}
+  .file-head{display:flex;align-items:center;gap:10px;padding:10px 14px;flex-wrap:wrap}
+  .file-head .name{font-weight:800;flex:1;min-width:140px;word-break:break-all}
+  .file-head .size{color:var(--ink-soft);font-weight:700;font-size:.88rem}
+  .file-head .btn{padding:8px 16px;font-size:.92rem;box-shadow:none}
+  .file-view{border-top:2px solid var(--sand);background:#EEE}
+  .file-view iframe{width:100%;height:75vh;border:0;display:block}
+  .file-view img{max-width:100%;display:block;margin:0 auto}
+
+  /* ---------- clients screen ---------- */
+  #clientsScreen{max-width:980px;margin:0 auto;padding:30px 18px 60px}
+  .hero{display:flex;align-items:center;gap:18px;margin-bottom:24px;flex-wrap:wrap}
+  .hero img{width:84px;height:84px;border-radius:18px;border:3px solid var(--caramel);object-fit:cover}
+  .hero h1{font-size:2.3rem;font-weight:800;color:var(--espresso);line-height:1.2}
+  .hero p{color:var(--ink-soft);font-weight:700}
+  .client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:18px}
+  .client-card{text-align:right;background:var(--white);border:2px solid var(--sand);border-right:7px solid var(--brown);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:6px;transition:transform .12s, box-shadow .12s}
+  .client-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .client-card strong{font-size:1.25rem;font-weight:800}
+  .client-card span{color:var(--ink-soft);font-weight:700;font-size:.92rem}
+  .client-card .mini{display:flex;align-items:center;gap:8px;color:var(--brown);font-weight:800;font-size:.9rem}
+  .client-card .mini .bar{flex:1;height:8px;background:var(--sand);border-radius:99px;overflow:hidden}
+  .client-card .mini .bar i{display:block;height:100%;background:var(--brown)}
+  .tools-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;padding-top:18px;border-top:2px solid var(--sand);align-items:center}
+  .tools-row .hint{flex-basis:100%}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--black);color:var(--white);padding:10px 20px;border-radius:999px;font-weight:700;z-index:50;box-shadow:var(--shadow)}
+
+  @media (max-width:760px){
+    .grid2,.grid3{grid-template-columns:1fr}
+    .who span{display:none}
+    .sec-head h2{font-size:1.5rem}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= CLIENTS ================= -->
+<div id="clientsScreen">
+  <div class="hero">
+    <img src="logo.jpg" alt="טוהר אקנין">
+    <div>
+      <h1>ליווי ומעקב</h1>
+      <p>תיק לכל לקוחה בליווי: הפגישות, היעדים וההתקדמות שלה.</p>
+    </div>
+  </div>
+  <button class="btn brown big" id="newClientBtn">＋ לקוחה חדשה בליווי</button>
+  <div class="client-grid" id="clientGrid"></div>
+  <div class="tools-row">
+    <button class="btn ghost" id="exportBtn">⬇ גיבוי כל התיקים לקובץ</button>
+    <button class="btn ghost" id="importBtn">⬆ שחזור מגיבוי</button>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+    <span class="hint">התיקים נשמרים אוטומטית בדפדפן הזה, במכשיר הזה בלבד. כדאי לגבות לקובץ מדי פעם.</span>
+  </div>
+</div>
+
+<!-- ================= ONE CLIENT ================= -->
+<div id="clientScreen" hidden>
+  <header class="topbar">
+    <div class="topbar-row">
+      <img class="brand" src="logo.jpg" alt="">
+      <div class="who"><strong id="whoName">לקוחה חדשה</strong><span id="whoBiz"></span></div>
+      <div class="spacer"></div>
+      <button class="icon-btn" id="backBtn">כל התיקים</button>
+    </div>
+    <div class="goal-bar">
+      <div class="inner"><span class="label">🎯 מטרת הליווי:</span><span class="text empty" id="goalText">עוד לא הוגדרה. כותבים אותה בפרטי הלקוחה.</span></div>
+    </div>
+  </header>
+
+  <div class="page">
+    <div class="card">
+      <details class="client-details" id="clientDetails">
+        <summary>פרטי הלקוחה ומטרת הליווי</summary>
+        <div class="grid3">
+          <div class="field"><label for="c-name">שם הלקוחה</label><input type="text" id="c-name" data-path="name"></div>
+          <div class="field"><label for="c-biz">שם העסק</label><input type="text" id="c-biz" data-path="business"></div>
+          <div class="field"><label for="c-start">תחילת הליווי</label><input type="date" id="c-start" data-path="start"></div>
+        </div>
+        <div class="field"><label for="c-goal">מטרת הליווי</label><textarea id="c-goal" data-path="goal" placeholder="לאן אנחנו רוצות להגיע בסוף הליווי?"></textarea></div>
+        <div style="margin-top:12px"><button type="button" class="link-btn" id="deleteClientBtn">מחיקת התיק</button></div>
+      </details>
+    </div>
+
+    <div class="sec-head"><h2>הפגישות</h2></div>
+    <p class="sec-intro">לוחצים על פגישה בציר כדי לראות אותה, או על "+" כדי לפתוח פגישה חדשה.</p>
+    <div class="timeline" id="timeline"></div>
+    <div id="meetingBox"></div>
+  </div>
+</div>
+
+<script>
+const STORE_KEY = "tohar-coaching-tracker-v1";
+const GOAL_STATES = [["todo", "לא התחיל"], ["doing", "בתהליך"], ["done", "הושג"]];
+
+const $ = id => document.getElementById(id);
+let db = load();
+let current = null;
+let selMeeting = -1;   // index in current.meetings, -1 = the latest
+let saveTimer = null;
+
+/* ---------- storage ---------- */
+function load(){
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { clients: [] }; }
+  catch { return { clients: [] }; }
+}
+function persist(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
+  catch { toast("שמירה נכשלה. כדאי לגבות לקובץ עכשיו."); }
+}
+function saveSoon(){
+  if (current) current.updatedAt = Date.now();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persist, 300);
+}
+window.addEventListener("beforeunload", persist);
+
+function newClient(){
+  return {
+    id: "c" + Date.now(), createdAt: Date.now(), updatedAt: Date.now(),
+    name: "", business: "", start: new Date().toISOString().slice(0, 10), goal: "",
+    meetings: []
+  };
+}
+
+/* ---------- data-path binding ---------- */
+function getPath(obj, path){ return path.split(".").reduce((o, k) => (o == null ? o : o[k]), obj); }
+function setPath(obj, path, value){
+  const keys = path.split("."), last = keys.pop();
+  keys.reduce((o, k) => (o[k] ??= {}), obj)[last] = value;
+}
+function autoGrow(el){
+  if (el.tagName !== "TEXTAREA") return;
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + 4 + "px";
+}
+function fillBound(root){
+  root.querySelectorAll("[data-path]").forEach(el => { el.value = getPath(current, el.dataset.path) ?? ""; autoGrow(el); });
+}
+document.addEventListener("input", e => {
+  const el = e.target;
+  if (!current || !el.dataset?.path) return;
+  setPath(current, el.dataset.path, el.value);
+  autoGrow(el);
+  if (["name", "business", "goal"].includes(el.dataset.path)) renderHeader();
+  if (el.dataset.path.includes(".goals.")) updateGoalProgress();
+  if (/^meetings\.\d+\.date$/.test(el.dataset.path)) renderTimeline();
+  saveSoon();
+});
+
+function fmtDate(iso){
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  return d && m && y ? Number(d) + "." + Number(m) + "." + y : iso;
+}
+
+/* ---------- clients screen ---------- */
+function goalStats(m){
+  const goals = (m?.goals || []).filter(g => g.text.trim());
+  return { total: goals.length, done: goals.filter(g => g.state === "done").length };
+}
+
+function renderClients(){
+  const grid = $("clientGrid");
+  grid.innerHTML = "";
+  const list = [...db.clients].sort((a, b) => b.updatedAt - a.updatedAt);
+  if (!list.length){
+    grid.innerHTML = '<p class="empty-note">עוד אין לקוחות בליווי. לוחצים על "לקוחה חדשה בליווי" ומתחילים.</p>';
+    return;
+  }
+  list.forEach(c => {
+    const last = c.meetings[c.meetings.length - 1];
+    const st = goalStats(last);
+    const b = document.createElement("button");
+    b.className = "client-card";
+    b.innerHTML = "<strong></strong><span></span>" +
+      (st.total ? '<div class="mini"><span class="bar"><i style="width:' + Math.round(st.done / st.total * 100) + '%"></i></span>' + st.done + "/" + st.total + " יעדים</div>" : "");
+    b.children[0].textContent = c.name || "ללא שם";
+    b.children[1].textContent = [c.business, c.meetings.length ? "פגישה " + c.meetings.length + (last.date ? " · " + fmtDate(last.date) : "") : "עוד אין פגישות"].filter(Boolean).join(" · ");
+    b.addEventListener("click", () => openClient(c.id));
+    grid.appendChild(b);
+  });
+}
+
+function showClients(){
+  persist();
+  current = null;
+  $("clientScreen").hidden = true;
+  $("clientsScreen").hidden = false;
+  renderClients();
+  window.scrollTo(0, 0);
+}
+
+function openClient(id, openDetails){
+  current = db.clients.find(c => c.id === id);
+  if (!current) return;
+  selMeeting = -1;
+  $("clientsScreen").hidden = true;
+  $("clientScreen").hidden = false;
+  $("clientDetails").open = !!openDetails || !current.name;
+  fillBound($("clientDetails"));
+  renderHeader();
+  renderMeetings();
+  window.scrollTo(0, 0);
+}
+
+$("newClientBtn").addEventListener("click", () => {
+  const c = newClient();
+  db.clients.push(c);
+  persist();
+  openClient(c.id, true);
+  setTimeout(() => $("c-name").focus(), 50);
+});
+$("backBtn").addEventListener("click", showClients);
+$("clientDetails").addEventListener("toggle", () => fillBound($("clientDetails")));
+
+function renderHeader(){
+  $("whoName").textContent = current.name || "לקוחה חדשה";
+  $("whoBiz").textContent = [current.business, current.start ? "בליווי מ-" + fmtDate(current.start) : ""].filter(Boolean).join(" · ");
+  const t = $("goalText"), v = (current.goal || "").trim();
+  t.textContent = v || "עוד לא הוגדרה. כותבים אותה בפרטי הלקוחה.";
+  t.classList.toggle("empty", !v);
+}
+
+$("deleteClientBtn").addEventListener("click", async () => {
+  if (!confirm('למחוק את התיק של "' + (current.name || "ללא שם") + '"? אי אפשר לשחזר אותו, אלא מקובץ גיבוי.')) return;
+  await Promise.all(current.meetings.flatMap(m => m.files || []).map(f => fileStore("delete", f.id).catch(() => {})));
+  db.clients = db.clients.filter(c => c.id !== current.id);
+  persist();
+  showClients();
+});
+
+/* ---------- meetings ---------- */
+function newMeeting(){
+  const list = current.meetings;
+  const prev = list[list.length - 1];
+  // goals carry over from the previous meeting so only their status needs updating
+  const goals = prev ? prev.goals.filter(g => g.text.trim()).map(g => ({ text: g.text, state: g.state })) : [];
+  if (!goals.length) goals.push({ text: "", state: "todo" });
+  list.push({ id: "m" + Date.now(), date: new Date().toISOString().slice(0, 10), files: [], update: "", status: "", goals, progress: "", stuck: "", next: "", private: "" });
+  selMeeting = list.length - 1;
+  saveSoon(); persist(); renderMeetings();
+  $("meetingBox").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderTimeline(){
+  const list = current.meetings;
+  const tl = $("timeline");
+  tl.innerHTML = "";
+  const dot = (cls, num, label, date, onClick) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "tl-dot " + cls;
+    b.innerHTML = '<span class="c"></span><span class="l"></span><span class="d"></span>';
+    b.children[0].textContent = num; b.children[1].textContent = label; b.children[2].textContent = date;
+    b.addEventListener("click", onClick);
+    tl.appendChild(b);
+  };
+  const line = () => { const l = document.createElement("span"); l.className = "tl-line"; tl.appendChild(l); };
+  list.forEach((m, i) => {
+    if (i) line();
+    dot(i === selMeeting ? "active" : "", String(i + 1), "פגישה " + (i + 1), fmtDate(m.date), () => { selMeeting = i; renderMeetings(); });
+  });
+  if (list.length) line();
+  dot("add", "+", "פגישה חדשה", "", newMeeting);
+}
+
+function renderMeetings(){
+  const list = current.meetings;
+  if (selMeeting < 0 || selMeeting >= list.length) selMeeting = list.length - 1;
+  renderTimeline();
+
+  const box = $("meetingBox");
+  box.innerHTML = "";
+  if (!list.length){
+    box.innerHTML = '<p class="empty-note">עוד אין פגישות. לוחצים על "+" כדי לפתוח את פגישה 1.</p>';
+    return;
+  }
+  const i = selMeeting, m = list[i], p = "meetings." + i + ".";
+  box.innerHTML =
+    '<div class="meeting-head"><h3>פגישה ' + (i + 1) + '</h3><input type="date" data-path="' + p + 'date"><button type="button" class="link-btn" id="delMeeting">מחיקת הפגישה</button></div>' +
+    '<div class="card"><div class="field"><label>📎 סיכום הפגישה (PDF)</label></div>' +
+      '<div class="drop" id="mDrop"><button type="button" class="btn brown" id="mAttach">העלאת PDF של הסיכום</button><span class="hint">או גוררים את הקובץ לכאן</span><input type="file" id="mFile" accept="application/pdf,image/*" multiple hidden></div>' +
+      '<div id="mFiles"></div></div>' +
+    '<div class="card"><div class="field"><label>היעדים</label><span class="hint">עוברים לבד מהפגישה הקודמת. מסמנים איפה כל יעד עומד.</span></div>' +
+      '<div class="goal-progress"><span id="gpText"></span><span class="bar"><i id="gpBar"></i></span></div>' +
+      '<div id="goalList"></div><button type="button" class="chip" id="addGoal" style="margin-top:10px">＋ הוספת יעד</button></div>' +
+    '<div class="card">' +
+      '<div class="field guide-q"><label>עדכון לטוהר</label><span class="hint">מה היא סיפרה או שלחה לפני הפגישה</span><textarea data-path="' + p + 'update"></textarea></div>' +
+      '<div class="field guide-q"><label>תמונת מצב עכשיו</label><textarea data-path="' + p + 'status"></textarea></div>' +
+      '<div class="field guide-q"><label>מה התקדם, הצלחות</label><textarea data-path="' + p + 'progress"></textarea></div>' +
+      '<div class="field guide-q"><label>איפה נתקעה</label><textarea data-path="' + p + 'stuck"></textarea></div>' +
+    '</div>' +
+    '<div class="decision"><div class="field"><label>הצעדים עד הפגישה הבאה</label><textarea data-path="' + p + 'next"></textarea></div></div>' +
+    '<div class="card private"><div class="field"><label>הערות פרטיות שלי<span class="private-tag">🔒 פרטי</span></label><textarea data-path="' + p + 'private"></textarea></div></div>';
+
+  const gl = $("goalList");
+  m.goals.forEach((g, j) => {
+    const row = document.createElement("div");
+    row.className = "goal-row";
+    row.innerHTML = '<input type="text" placeholder="יעד..." data-path="' + p + 'goals.' + j + '.text"><span class="state"></span><button type="button" class="link-btn">הסרה</button>';
+    GOAL_STATES.forEach(([key, label]) => {
+      const sb = document.createElement("button");
+      sb.type = "button"; sb.dataset.s = key; sb.textContent = label;
+      sb.className = g.state === key ? "on" : "";
+      sb.addEventListener("click", () => {
+        g.state = key;
+        row.querySelectorAll(".state button").forEach(x => x.classList.toggle("on", x === sb));
+        saveSoon(); updateGoalProgress();
+      });
+      row.querySelector(".state").appendChild(sb);
+    });
+    row.querySelector(".link-btn").addEventListener("click", () => {
+      if (g.text.trim() && !confirm('להסיר את היעד "' + g.text + '"?')) return;
+      m.goals.splice(j, 1); saveSoon(); renderMeetings();
+    });
+    gl.appendChild(row);
+  });
+  $("addGoal").addEventListener("click", () => {
+    m.goals.push({ text: "", state: "todo" }); saveSoon(); renderMeetings();
+    setTimeout(() => $("goalList").lastElementChild?.querySelector("input")?.focus(), 30);
+  });
+  $("delMeeting").addEventListener("click", async () => {
+    if (!confirm("למחוק את פגישה " + (i + 1) + " וכל מה שתועד בה?")) return;
+    await Promise.all((m.files || []).map(f => fileStore("delete", f.id).catch(() => {})));
+    list.splice(i, 1); selMeeting = -1; saveSoon(); persist(); renderMeetings();
+  });
+
+  const rerenderFiles = () => renderFileList($("mFiles"), m.files, rerenderFiles);
+  rerenderFiles();
+  $("mAttach").addEventListener("click", () => $("mFile").click());
+  $("mFile").addEventListener("change", e => { addFiles(e.target.files, m.files, rerenderFiles); e.target.value = ""; });
+  const md = $("mDrop");
+  ["dragenter", "dragover"].forEach(t => md.addEventListener(t, e => { e.preventDefault(); md.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(t => md.addEventListener(t, e => { e.preventDefault(); md.classList.remove("over"); }));
+  md.addEventListener("drop", e => addFiles(e.dataTransfer.files, m.files, rerenderFiles));
+
+  fillBound(box);
+  updateGoalProgress();
+}
+
+function updateGoalProgress(){
+  const m = current?.meetings?.[selMeeting];
+  if (!m || !$("gpText")) return;
+  const { total, done } = goalStats(m);
+  $("gpText").textContent = done + " מתוך " + total + " יעדים הושגו";
+  $("gpBar").style.width = (total ? Math.round(done / total * 100) : 0) + "%";
+}
+
+/* ---------- attached files: kept in IndexedDB, too big for localStorage ---------- */
+function fileStore(op, key, value){
+  return new Promise((ok, bad) => {
+    const req = indexedDB.open("tohar-coaching-files", 1);
+    req.onupgradeneeded = () => req.result.createObjectStore("files");
+    req.onerror = () => bad(req.error);
+    req.onsuccess = () => {
+      const tx = req.result.transaction("files", op === "get" ? "readonly" : "readwrite");
+      const st = tx.objectStore("files");
+      const r = op === "get" ? st.get(key) : op === "put" ? st.put(value, key) : st.delete(key);
+      r.onsuccess = () => ok(r.result);
+      r.onerror = () => bad(r.error);
+    };
+  });
+}
+
+function fmtSize(n){ return n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+
+async function addFiles(list, target, rerender){
+  const files = [...list].filter(f => f.type === "application/pdf" || f.type.startsWith("image/"));
+  if (!files.length){ toast("אפשר להעלות PDF או תמונה"); return; }
+  for (const f of files){
+    const id = "f" + Date.now() + Math.random().toString(36).slice(2, 7);
+    try {
+      await fileStore("put", id, f);
+      target.push({ id, name: f.name, type: f.type, size: f.size, addedAt: Date.now() });
+    } catch {
+      toast("לא הצלחתי לשמור את " + f.name);
+    }
+  }
+  saveSoon(); persist(); rerender();
+  toast(files.length > 1 ? "הקבצים נשמרו בתיק" : "הקובץ נשמר בתיק");
+}
+
+function renderFileList(box, list, rerender){
+  box.innerHTML = "";
+  list.forEach((meta, i) => {
+    const row = document.createElement("div");
+    row.className = "file-row";
+    row.innerHTML =
+      '<div class="file-head"><span>' + (meta.type === "application/pdf" ? "📄" : "🖼") + '</span><span class="name"></span><span class="size">' + fmtSize(meta.size) + '</span>' +
+      '<button type="button" class="btn" data-act="view">הצגה כאן</button>' +
+      '<button type="button" class="btn ghost" data-act="open">פתיחה בחלון</button>' +
+      '<button type="button" class="link-btn" data-act="del">הסרה</button></div>' +
+      '<div class="file-view" hidden></div>';
+    row.querySelector(".name").textContent = meta.name;
+    const view = row.querySelector(".file-view");
+    row.querySelector('[data-act="view"]').addEventListener("click", async e => {
+      if (!view.hidden){ view.hidden = true; view.innerHTML = ""; e.target.textContent = "הצגה כאן"; return; }
+      const blob = await fileStore("get", meta.id);
+      if (!blob){ toast("הקובץ לא נמצא בדפדפן הזה"); return; }
+      view.innerHTML = meta.type === "application/pdf" ? '<iframe title="הקובץ"></iframe>' : '<img alt="">';
+      view.firstChild.src = URL.createObjectURL(blob);
+      view.hidden = false;
+      e.target.textContent = "הסתרה";
+    });
+    row.querySelector('[data-act="open"]').addEventListener("click", async () => {
+      const blob = await fileStore("get", meta.id);
+      if (!blob){ toast("הקובץ לא נמצא בדפדפן הזה"); return; }
+      window.open(URL.createObjectURL(blob), "_blank");
+    });
+    row.querySelector('[data-act="del"]').addEventListener("click", async () => {
+      if (!confirm('להסיר את "' + meta.name + '" מהתיק?')) return;
+      await fileStore("delete", meta.id).catch(() => {});
+      list.splice(i, 1);
+      saveSoon(); rerender();
+    });
+    box.appendChild(row);
+  });
+}
+
+/* ---------- backup ---------- */
+const blobToDataUrl = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
+
+$("exportBtn").addEventListener("click", async () => {
+  // attached PDFs travel inside the backup so a restore on another device is complete
+  const files = {};
+  for (const c of db.clients) for (const f of c.meetings.flatMap(m => m.files || [])){
+    const b = await fileStore("get", f.id).catch(() => null);
+    if (b) files[f.id] = await blobToDataUrl(b);
+  }
+  const blob = new Blob([JSON.stringify({ ...db, files }, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "גיבוי ליווי ומעקב " + new Date().toISOString().slice(0, 10) + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
+$("importBtn").addEventListener("click", () => $("importFile").click());
+$("importFile").addEventListener("change", async e => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!Array.isArray(data.clients)) throw new Error("bad file");
+    let added = 0, replaced = 0;
+    data.clients.forEach(c => {
+      const i = db.clients.findIndex(x => x.id === c.id);
+      if (i === -1){ db.clients.push(c); added++; }
+      else if ((c.updatedAt || 0) > (db.clients[i].updatedAt || 0)){ db.clients[i] = c; replaced++; }
+    });
+    for (const [id, url] of Object.entries(data.files || {})){
+      await fileStore("put", id, await (await fetch(url)).blob()).catch(() => {});
+    }
+    persist(); renderClients();
+    toast("שוחזרו " + added + " תיקים חדשים" + (replaced ? " ועודכנו " + replaced : ""));
+  } catch {
+    toast("הקובץ לא נראה כמו גיבוי של המערכת");
+  }
+});
+
+/* ---------- misc ---------- */
+let toastTimer = null;
+function toast(msg){
+  let t = document.querySelector(".toast");
+  if (!t){ t = document.createElement("div"); t.className = "toast"; document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (t.hidden = true), 2600);
+}
+
+renderClients();
+
+// offline: a service worker keeps a copy of the page (only on the web version, browsers don't allow it for local files)
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
