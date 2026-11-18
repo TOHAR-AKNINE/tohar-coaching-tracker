@@ -228,6 +228,7 @@
           <a class="btn wa" id="waLinkBtn" target="_blank" rel="noopener">שליחה בוואטסאפ</a>
           <button class="btn ghost" id="copyBtn">העתקה</button>
         </div>
+        <button class="btn brown full" id="previewBtn" style="margin-top:12px">👁 איך היא רואה</button>
         <div style="margin-top:16px;display:flex;gap:18px;flex-wrap:wrap">
           <button class="link-btn" id="newCodeBtn">קוד חדש</button>
           <button class="link-btn" id="deleteClientBtn">מחיקת הלקוחה</button>
@@ -307,6 +308,12 @@ function toast(msg){
 function getSession(){ try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; } }
 function setSession(s){ try { s ? localStorage.setItem(SESSION_KEY, JSON.stringify(s)) : localStorage.removeItem(SESSION_KEY); } catch {} }
 let S = getSession();
+// "איך היא רואה": a preview tab gets its own short session in the address, kept only in memory
+const previewToken = location.hash.startsWith("#preview=") ? location.hash.slice(9) : null;
+if (previewToken){
+  S = { role: "client", session: previewToken, preview: true };
+  history.replaceState(null, "", pageUrl);
+}
 
 // every call carries the session; an expired one sends the user back to the entrance
 async function call(fn, args = {}){
@@ -316,6 +323,8 @@ async function call(fn, args = {}){
   return data;
 }
 async function logout(){
+  // a preview tab must never sign Tohar out of her own session on this device
+  if (S?.preview){ window.close(); show("loginScreen"); return; }
   if (S?.session) sb.rpc("coaching_logout", { p_session: S.session });
   S = null; setSession(null);
   show("loginScreen");
@@ -412,6 +421,7 @@ async function clientMode(){
   try { C = await call("coaching_me_view"); } catch { return; }
   if (cSel < 0 || cSel >= C.meetings.length) cSel = C.meetings.length - 1;
   $("cHello").textContent = "היי " + (C.name || "") + " 🤍";
+  if (S.preview){ $("cLogout").textContent = "סגירת התצוגה"; document.title = "תצוגה מקדימה · " + (C.name || ""); }
   $("cGoal").textContent = C.goal || "נגדיר אותה יחד";
   $("cGoal").classList.toggle("empty", !C.goal);
   drawTimeline($("cTimeline"), C.meetings, cSel, i => { cSel = i; clientMode(); });
@@ -486,6 +496,10 @@ function renderClientMeeting(){
   const send = el("button", "btn brown big full", "שליחה לטוהר");
   const status = el("div", "status");
   box.append(send, status);
+  if (S.preview){
+    send.disabled = true;
+    status.textContent = "בתצוגה מקדימה אי אפשר לשלוח. ככה בדיוק הלקוחה רואה את הדף.";
+  }
   send.addEventListener("click", async () => {
     send.disabled = true; status.className = "status"; status.textContent = "שולחת...";
     try {
@@ -582,6 +596,14 @@ document.querySelectorAll("[data-field]").forEach(inp => inp.addEventListener("i
     catch { toast("השמירה נכשלה, בדקי חיבור"); }
   }, 600);
 }));
+
+$("previewBtn").addEventListener("click", async () => {
+  const w = window.open("", "_blank");            // opened now, so the browser doesn't block it
+  try {
+    const t = await call("coaching_admin_preview", { p_client: A.client.id });
+    w.location = pageUrl + "#preview=" + t;
+  } catch { if (w) w.close(); toast("לא הצלחתי לפתוח תצוגה מקדימה"); }
+});
 
 $("copyBtn").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(loginText()); toast("הועתק: קישור, שם וקוד"); }

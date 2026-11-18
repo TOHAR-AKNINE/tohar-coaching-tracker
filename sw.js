@@ -1,6 +1,6 @@
 // Keeps the follow-up system working without internet.
 // Bump VERSION whenever index.html changes so phones pick up the new copy.
-const VERSION = "v4";
+const VERSION = "v5";
 const CACHE = "coaching-tracker-" + VERSION;
 const FILES = [
   "./",
