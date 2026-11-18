@@ -141,6 +141,9 @@
   .thanks{text-align:center;background:var(--white);border:2px solid var(--sand);border-radius:22px;padding:30px 20px;margin-top:6px}
   .thanks h3{font-size:1.6rem;font-weight:800;color:var(--espresso);margin-bottom:6px}
   .thanks p{font-weight:700;color:var(--ink-soft);margin-bottom:16px}
+  .code-box{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:baseline;background:var(--paper);border-radius:12px;padding:12px 14px}
+  .code-box strong{font-size:1.2rem;font-weight:800}
+  .code-box .code{direction:ltr;text-align:right;letter-spacing:.3em;font-size:1.5rem;color:var(--brown)}
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--black);color:var(--white);padding:10px 20px;border-radius:999px;font-weight:700;z-index:50;box-shadow:var(--shadow)}
 
   @media (max-width:760px){
@@ -155,15 +158,29 @@
 
 <div id="loading" class="center"><img src="logo.jpg" alt=""><p>טוען...</p></div>
 
-<!-- ================= TOHAR: SIGN IN ================= -->
+<!-- ================= ENTRANCE (everyone) ================= -->
 <div id="loginScreen" class="center" hidden>
   <img src="logo.jpg" alt="טוהר אקנין">
   <h1>ליווי ומעקב</h1>
-  <p>כניסה לניהול הלקוחות. נשלח אלייך קישור כניסה למייל, בלי סיסמה.</p>
+  <p>כניסה עם השם והקוד שקיבלת מטוהר</p>
   <div class="login-box">
-    <input type="email" id="loginEmail" placeholder="המייל שלך" autocomplete="email">
-    <button class="btn brown big" id="loginBtn">שליחת קישור כניסה</button>
+    <input type="text" id="loginName" placeholder="השם שלך" autocomplete="name">
+    <input type="text" id="loginCode" placeholder="הקוד" inputmode="numeric" autocomplete="off" maxlength="8" style="direction:ltr;text-align:center;letter-spacing:.3em;font-size:22px">
+    <button class="btn brown big" id="loginBtn">כניסה</button>
     <div class="status" id="loginStatus"></div>
+  </div>
+</div>
+
+<!-- ================= TOHAR: ONE-TIME SETUP ================= -->
+<div id="setupScreen" class="center" hidden>
+  <img src="logo.jpg" alt="טוהר אקנין">
+  <h1>ברוכה הבאה, טוהר 🤍</h1>
+  <p>בחרי את השם והקוד שאיתם תיכנסי למערכת. הקוד: 4 עד 8 ספרות, שרק את יודעת.</p>
+  <div class="login-box">
+    <input type="text" id="setupName" value="טוהר">
+    <input type="text" id="setupCode" placeholder="הקוד שלך" inputmode="numeric" autocomplete="off" maxlength="8" style="direction:ltr;text-align:center;letter-spacing:.3em;font-size:22px">
+    <button class="btn brown big" id="setupBtn">שמירה וכניסה</button>
+    <div class="status" id="setupStatus"></div>
   </div>
 </div>
 
@@ -173,7 +190,7 @@
     <img src="logo.jpg" alt="טוהר אקנין">
     <div>
       <h1>ליווי ומעקב</h1>
-      <p>כל לקוחה מקבלת קישור אישי, מעדכנת בו את ההתקדמות, וכאן את רואה הכול.</p>
+      <p>כל לקוחה נכנסת עם השם והקוד שלה, מעדכנת את ההתקדמות, וכאן את רואה הכול.</p>
     </div>
   </div>
   <div class="btn-row">
@@ -199,20 +216,22 @@
     <div class="grid2">
       <div class="card">
         <h3>פרטי הלקוחה</h3>
-        <div class="field"><label for="f-name">שם</label><input type="text" id="f-name" data-field="name"></div>
+        <div class="field"><label for="f-name">שם</label><span class="hint">בשם הזה היא נכנסת</span><input type="text" id="f-name" data-field="name"></div>
         <div class="field"><label for="f-biz">שם העסק</label><input type="text" id="f-biz" data-field="business"></div>
         <div class="field"><label for="f-goal">מטרת הליווי</label><textarea id="f-goal" data-field="goal" placeholder="לאן אנחנו רוצות להגיע?"></textarea></div>
       </div>
       <div class="card navy">
-        <h3>🔗 הקישור האישי שלה</h3>
-        <p class="hint" style="margin-bottom:10px">שולחים לה פעם אחת. דרכו היא רואה את הסיכומים ומעדכנת אותך.</p>
-        <div class="linkbox" id="clientLink"></div>
+        <h3>🔑 פרטי הכניסה שלה</h3>
+        <div class="code-box"><span class="hint">שם</span><strong id="cName"></strong><span class="hint">קוד</span><strong id="cCode" class="code"></strong></div>
+        <p class="hint" style="margin:10px 0 12px">שולחים לה פעם אחת את הקישור, השם והקוד.</p>
         <div class="btn-row">
-          <button class="btn" id="copyLinkBtn">העתקת הקישור</button>
           <a class="btn wa" id="waLinkBtn" target="_blank" rel="noopener">שליחה בוואטסאפ</a>
-          <a class="btn ghost" id="previewBtn" target="_blank" rel="noopener">איך היא רואה</a>
+          <button class="btn ghost" id="copyBtn">העתקה</button>
         </div>
-        <div style="margin-top:16px"><button class="link-btn" id="deleteClientBtn">מחיקת הלקוחה</button></div>
+        <div style="margin-top:16px;display:flex;gap:18px;flex-wrap:wrap">
+          <button class="link-btn" id="newCodeBtn">קוד חדש</button>
+          <button class="link-btn" id="deleteClientBtn">מחיקת הלקוחה</button>
+        </div>
       </div>
     </div>
 
@@ -229,6 +248,8 @@
     <div class="topbar-row">
       <img class="brand" src="logo.jpg" alt="">
       <div class="who"><strong id="cHello">היי</strong><span>הליווי שלך עם טוהר אקנין</span></div>
+      <div class="spacer"></div>
+      <button class="icon-btn" id="cLogout">יציאה</button>
     </div>
     <div class="goal-bar"><div class="inner"><span class="label">🎯 המטרה שלנו:</span><span class="text empty" id="cGoal"></span></div></div>
   </header>
@@ -238,27 +259,22 @@
   </div>
 </div>
 
-<div id="badLink" class="center" hidden>
-  <img src="logo.jpg" alt="">
-  <h1>הקישור לא נמצא</h1>
-  <p>כדאי לבדוק שהקישור הועתק במלואו, או לבקש מטוהר קישור חדש.</p>
-</div>
-
 <script src="lib/supabase.js"></script>
 <script>
 const SB_URL = "https://ricmopttshkktifkrthr.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpY21vcHR0c2hra3RpZmtydGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMzgzNTQsImV4cCI6MjEwODYxNDM1NH0.3rcWgwxXLv47j9YQA4hrgDZk8tDGDBxsuXvZKystcAI";   // public anon key, safe in the browser (all access is checked by row-level security)
-const BUCKET = "coaching-summaries";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpY21vcHR0c2hra3RpZmtydGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMzgzNTQsImV4cCI6MjEwODYxNDM1NH0.3rcWgwxXLv47j9YQA4hrgDZk8tDGDBxsuXvZKystcAI";   // public anon key, safe in the browser: the database only answers through checked functions
 const WA_NUMBER = "972547471300";
+const SESSION_KEY = "tohar-coaching-session";
 const GOAL_STATES = [["todo", "לא התחלתי"], ["doing", "בתהליך"], ["done", "הושג"]];
+const MAX_FILE = 10 * 1024 * 1024;
 
-const sb = supabase.createClient(SB_URL, SB_KEY);
+const sb = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
 const $ = id => document.getElementById(id);
-const token = new URLSearchParams(location.search).get("c");
 const pageUrl = location.origin + location.pathname;
+const setupKey = new URLSearchParams(location.search).get("setup");
 
 function show(id){
-  ["loading", "loginScreen", "adminList", "adminClient", "clientPage", "badLink"].forEach(s => $(s).hidden = s !== id);
+  ["loading", "loginScreen", "setupScreen", "adminList", "adminClient", "clientPage"].forEach(s => $(s).hidden = s !== id);
   window.scrollTo(0, 0);
 }
 function fmtDate(iso){
@@ -269,7 +285,7 @@ function fmtDate(iso){
 function fmtTime(ts){ return ts ? new Date(ts).toLocaleString("he-IL", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" }) : ""; }
 function autoGrow(el){ if (el.tagName === "TEXTAREA"){ el.style.height = "auto"; el.style.height = el.scrollHeight + 4 + "px"; } }
 document.addEventListener("input", e => autoGrow(e.target));
-const publicUrl = path => sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 function goalStats(goals){
   const g = (goals || []).filter(x => (x.text || "").trim());
   return { total: g.length, done: g.filter(x => x.state === "done").length };
@@ -278,7 +294,94 @@ function progressHtml(goals){
   const { total, done } = goalStats(goals);
   return '<div class="goal-progress"><span>' + done + ' מתוך ' + total + ' יעדים הושגו</span><span class="bar"><i style="width:' + (total ? Math.round(done / total * 100) : 0) + '%"></i></span></div>';
 }
-function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+let toastTimer = null;
+function toast(msg){
+  let t = document.querySelector(".toast");
+  if (!t){ t = el("div", "toast"); document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (t.hidden = true), 2600);
+}
+
+/* ---------- session: remembered on this device until "יציאה" ---------- */
+function getSession(){ try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; } }
+function setSession(s){ try { s ? localStorage.setItem(SESSION_KEY, JSON.stringify(s)) : localStorage.removeItem(SESSION_KEY); } catch {} }
+let S = getSession();
+
+// every call carries the session; an expired one sends the user back to the entrance
+async function call(fn, args = {}){
+  const { data, error } = await sb.rpc(fn, { p_session: S?.session, ...args });
+  if (error && /not allowed/.test(error.message)){ logout(); throw error; }
+  if (error) throw error;
+  return data;
+}
+async function logout(){
+  if (S?.session) sb.rpc("coaching_logout", { p_session: S.session });
+  S = null; setSession(null);
+  show("loginScreen");
+}
+$("logoutBtn").addEventListener("click", logout);
+$("cLogout").addEventListener("click", logout);
+
+$("loginBtn").addEventListener("click", login);
+$("loginCode").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+async function login(){
+  const name = $("loginName").value.trim(), code = $("loginCode").value.trim();
+  const st = $("loginStatus");
+  if (!name || !code){ st.className = "status err"; st.textContent = "צריך שם וקוד"; return; }
+  $("loginBtn").disabled = true; st.className = "status"; st.textContent = "נכנסת...";
+  const { data, error } = await sb.rpc("coaching_login", { p_name: name, p_code: code });
+  $("loginBtn").disabled = false;
+  if (error || data?.error){
+    st.className = "status err";
+    st.textContent = data?.error === "locked" ? "יותר מדי ניסיונות. נסי שוב בעוד רבע שעה."
+                   : error ? "אין חיבור כרגע. בדקי את האינטרנט ונסי שוב." : "השם או הקוד לא נכונים. בדקי ונסי שוב.";
+    return;
+  }
+  S = data; setSession(S);
+  $("loginCode").value = ""; st.textContent = "";
+  start();
+}
+
+$("setupBtn").addEventListener("click", async () => {
+  const st = $("setupStatus"), code = $("setupCode").value.trim();
+  if (!/^[0-9]{4,8}$/.test(code)){ st.className = "status err"; st.textContent = "הקוד צריך להיות 4 עד 8 ספרות"; return; }
+  const { data, error } = await sb.rpc("coaching_admin_setup", { p_setup: setupKey, p_name: $("setupName").value.trim(), p_code: code });
+  if (error){ st.className = "status err"; st.textContent = "הקישור הזה כבר נוצל או לא תקין."; return; }
+  S = data; setSession(S);
+  history.replaceState(null, "", pageUrl);
+  toast("הקוד נשמר. מעכשיו נכנסים עם השם והקוד");
+  start();
+});
+
+/* ---------- summary file (stored in the cloud database) ---------- */
+async function openFile(meetingId, target){
+  const f = await call("coaching_file", { p_meeting: meetingId });
+  if (!f){ toast("הקובץ לא נמצא"); return null; }
+  const bytes = Uint8Array.from(atob(f.data), c => c.charCodeAt(0));
+  return URL.createObjectURL(new Blob([bytes], { type: f.mime }));
+}
+function fileBlock(meetingId, name){
+  const row = el("div", "file-row");
+  row.innerHTML = '<div class="file-head"><span>📄</span><span class="name"></span><button type="button" class="btn" data-act="view">הצגה כאן</button><button type="button" class="btn ghost" data-act="open">פתיחה</button></div><div class="file-view" hidden></div>';
+  row.querySelector(".name").textContent = name || "סיכום הפגישה";
+  const view = row.querySelector(".file-view");
+  let url = null;
+  const getUrl = async () => url || (url = await openFile(meetingId));
+  row.querySelector('[data-act="view"]').addEventListener("click", async e => {
+    if (!view.hidden){ view.hidden = true; view.innerHTML = ""; e.target.textContent = "הצגה כאן"; return; }
+    e.target.textContent = "טוען...";
+    const u = await getUrl(); if (!u){ e.target.textContent = "הצגה כאן"; return; }
+    view.innerHTML = '<iframe title="סיכום הפגישה"></iframe>';
+    view.firstChild.src = u; view.hidden = false; e.target.textContent = "הסתרה";
+  });
+  row.querySelector('[data-act="open"]').addEventListener("click", async () => {
+    const w = window.open("", "_blank");            // opened now, so the browser doesn't block it
+    const u = await getUrl();
+    if (u && w) w.location = u; else if (w) w.close();
+  });
+  return row;
+}
 
 function drawTimeline(box, meetings, sel, onPick, onAdd, isNew){
   box.innerHTML = "";
@@ -300,39 +403,13 @@ function drawTimeline(box, meetings, sel, onPick, onAdd, isNew){
   }
 }
 
-function summaryBlock(path, name){
-  const row = el("div", "file-row");
-  row.innerHTML = '<div class="file-head"><span>📄</span><span class="name"></span><button type="button" class="btn" data-act="view">הצגה כאן</button><a class="btn ghost" target="_blank" rel="noopener">פתיחה</a></div><div class="file-view" hidden></div>';
-  row.querySelector(".name").textContent = name || "סיכום הפגישה";
-  row.querySelector("a").href = publicUrl(path);
-  const view = row.querySelector(".file-view");
-  row.querySelector('[data-act="view"]').addEventListener("click", e => {
-    if (!view.hidden){ view.hidden = true; view.innerHTML = ""; e.target.textContent = "הצגה כאן"; return; }
-    view.innerHTML = '<iframe title="סיכום הפגישה"></iframe>';
-    view.firstChild.src = publicUrl(path);
-    view.hidden = false; e.target.textContent = "הסתרה";
-  });
-  return row;
-}
-
-let toastTimer = null;
-function toast(msg){
-  let t = document.querySelector(".toast");
-  if (!t){ t = el("div", "toast"); document.body.appendChild(t); }
-  t.textContent = msg; t.hidden = false;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => (t.hidden = true), 2600);
-}
-
 /* =====================================================================
-   CLIENT PAGE (?c=token): sees her summaries and sends updates
+   CLIENT: sees her summaries and sends updates
    ===================================================================== */
 let C = null, cSel = -1;
 
 async function clientMode(){
-  const { data, error } = await sb.rpc("coaching_client_view", { p_token: token });
-  if (error || !data){ show("badLink"); return; }
-  C = data;
+  try { C = await call("coaching_me_view"); } catch { return; }
   if (cSel < 0 || cSel >= C.meetings.length) cSel = C.meetings.length - 1;
   $("cHello").textContent = "היי " + (C.name || "") + " 🤍";
   $("cGoal").textContent = C.goal || "נגדיר אותה יחד";
@@ -354,9 +431,9 @@ function renderClientMeeting(){
   head.append(el("h3", null, "פגישה " + m.n), el("span", "hint", fmtDate(m.date)));
   box.appendChild(head);
 
-  if (m.summary_path){
+  if (m.file){
     const card = el("div", "card");
-    card.append(el("h3", null, "📎 סיכום הפגישה"), summaryBlock(m.summary_path, m.summary_name));
+    card.append(el("h3", null, "📎 סיכום הפגישה"), fileBlock(m.id, m.file.name));
     box.appendChild(card);
   }
   if ((m.note || "").trim()){
@@ -411,11 +488,12 @@ function renderClientMeeting(){
   box.append(send, status);
   send.addEventListener("click", async () => {
     send.disabled = true; status.className = "status"; status.textContent = "שולחת...";
-    const { error } = await sb.rpc("coaching_client_submit", {
-      p_token: token, p_meeting: m.id, p_goals: goals,
-      p_progress: $("cProgress").value.trim(), p_stuck: $("cStuck").value.trim(), p_note: $("cNote").value.trim()
-    });
-    if (error){
+    try {
+      await call("coaching_me_submit", {
+        p_meeting: m.id, p_goals: goals,
+        p_progress: $("cProgress").value.trim(), p_stuck: $("cStuck").value.trim(), p_note: $("cNote").value.trim()
+      });
+    } catch (error){
       send.disabled = false;
       status.className = "status err";
       status.textContent = /too many/.test(error.message) ? "רגע, שלחת כמה פעמים ברצף. נסי שוב בעוד דקה." : "משהו השתבש בשליחה. בדקי את החיבור לאינטרנט ונסי שוב.";
@@ -440,44 +518,20 @@ function renderClientMeeting(){
 }
 
 /* =====================================================================
-   TOHAR'S SIDE (signed in)
+   TOHAR'S SIDE
    ===================================================================== */
 let A = null, aSel = -1, saveTimers = {};
 
-async function adminMode(){
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) loadClients(); else show("loginScreen");
-  sb.auth.onAuthStateChange((event, s) => {
-    if (event === "SIGNED_IN" && $("loginScreen").hidden === false) loadClients();
-    if (event === "SIGNED_OUT") show("loginScreen");
-  });
-}
-
-$("loginBtn").addEventListener("click", async () => {
-  const email = $("loginEmail").value.trim();
-  const st = $("loginStatus");
-  if (!/^\S+@\S+\.\S+$/.test(email)){ st.className = "status err"; st.textContent = "המייל לא נראה תקין"; return; }
-  $("loginBtn").disabled = true; st.className = "status"; st.textContent = "שולחת...";
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: pageUrl } });
-  $("loginBtn").disabled = false;
-  if (error){ st.className = "status err"; st.textContent = "לא הצלחתי לשלוח. נסי שוב בעוד כמה דקות."; return; }
-  st.className = "status ok"; st.textContent = "שלחתי קישור כניסה למייל ✔ לוחצים עליו ונכנסים.";
-});
-$("logoutBtn").addEventListener("click", () => sb.auth.signOut());
-
 async function loadClients(){
-  const { data, error } = await sb.from("coaching_clients")
-    .select("id, name, business, created_at, coaching_meetings(n, date), coaching_updates(seen)")
-    .order("created_at", { ascending: false });
-  if (error){ toast("לא הצלחתי לטעון את הלקוחות"); show("adminList"); return; }
+  let list;
+  try { list = await call("coaching_admin_list"); } catch { return; }
   const grid = $("clientGrid");
   grid.innerHTML = "";
-  if (!data.length) grid.innerHTML = '<p class="empty-note">עוד אין לקוחות בליווי. לוחצים על "לקוחה חדשה בליווי" ומתחילים.</p>';
-  data.forEach(c => {
+  if (!list.length) grid.innerHTML = '<p class="empty-note">עוד אין לקוחות בליווי. לוחצים על "לקוחה חדשה בליווי" ומתחילים.</p>';
+  list.forEach(c => {
     const b = el("button", "client-card");
-    const last = [...c.coaching_meetings].sort((a, z) => z.n - a.n)[0];
-    b.append(el("strong", null, c.name || "ללא שם"), el("span", null, [c.business, last ? "פגישה " + last.n + " · " + fmtDate(last.date) : "עוד אין פגישות"].filter(Boolean).join(" · ")));
-    if (c.coaching_updates.some(u => !u.seen)) b.append(el("span", "new", "עדכון חדש"));
+    b.append(el("strong", null, c.name || "ללא שם"), el("span", null, [c.business, c.last_n ? "פגישה " + c.last_n + " · " + fmtDate(c.last_date) : "עוד אין פגישות"].filter(Boolean).join(" · ")));
+    if (c.unseen > 0) b.append(el("span", "new", "עדכון חדש"));
     b.addEventListener("click", () => openClient(c.id));
     grid.appendChild(b);
   });
@@ -485,63 +539,63 @@ async function loadClients(){
 }
 
 $("newClientBtn").addEventListener("click", async () => {
-  const { data, error } = await sb.from("coaching_clients").insert({ name: "" }).select("id").single();
-  if (error){ toast("לא הצלחתי ליצור לקוחה"); return; }
-  await openClient(data.id);
-  $("f-name").focus();
+  try {
+    const r = await call("coaching_admin_save_client", { p_client: null, p_name: "", p_business: "", p_goal: "" });
+    await openClient(r.id);
+    $("f-name").focus();
+  } catch { toast("לא הצלחתי ליצור לקוחה"); }
 });
 $("backBtn").addEventListener("click", loadClients);
 
 async function openClient(id, keepSel){
-  const [c, m, u] = await Promise.all([
-    sb.from("coaching_clients").select("*").eq("id", id).single(),
-    sb.from("coaching_meetings").select("*").eq("client_id", id).order("n"),
-    sb.from("coaching_updates").select("*").eq("client_id", id).order("created_at", { ascending: false })
-  ]);
-  if (c.error){ toast("לא הצלחתי לפתוח את הלקוחה"); return; }
-  A = { client: c.data, meetings: m.data || [], updates: u.data || [] };
+  let d;
+  try { d = await call("coaching_admin_client", { p_client: id }); } catch { toast("לא הצלחתי לפתוח את הלקוחה"); return; }
+  A = d;
   if (!keepSel || aSel >= A.meetings.length) aSel = A.meetings.length - 1;
   ["name", "business", "goal"].forEach(f => { const inp = document.querySelector('[data-field="' + f + '"]'); inp.value = A.client[f] || ""; autoGrow(inp); });
   renderAdminHeader();
-  const link = pageUrl + "?c=" + A.client.token;
-  $("clientLink").textContent = link;
-  $("previewBtn").href = link;
-  $("waLinkBtn").href = "https://wa.me/?text=" + encodeURIComponent("היי " + (A.client.name || "") + " 🤍\nזה הקישור האישי שלך למעקב הליווי שלנו. כאן תמצאי את סיכומי הפגישות, ותוכלי לעדכן אותי על ההתקדמות:\n" + link);
   renderAdminMeetings();
   show("adminClient");
 }
 
+function loginText(){
+  return "היי " + (A.client.name || "") + " 🤍\nזה המקום שלנו למעקב הליווי. כאן תמצאי את סיכומי הפגישות ותוכלי לעדכן אותי על ההתקדמות.\n\n" +
+         pageUrl + "\nשם: " + (A.client.name || "") + "\nקוד: " + A.client.code;
+}
 function renderAdminHeader(){
   $("aName").textContent = A.client.name || "לקוחה חדשה";
   $("aBiz").textContent = A.client.business || "";
   $("aGoal").textContent = A.client.goal || "עוד לא הוגדרה";
   $("aGoal").classList.toggle("empty", !A.client.goal);
+  $("cName").textContent = A.client.name || "—";
+  $("cCode").textContent = A.client.code;
+  $("waLinkBtn").href = "https://wa.me/?text=" + encodeURIComponent(loginText());
 }
 
 // client details save themselves a moment after typing stops
 document.querySelectorAll("[data-field]").forEach(inp => inp.addEventListener("input", () => {
-  const f = inp.dataset.field;
-  A.client[f] = inp.value;
+  A.client[inp.dataset.field] = inp.value;
   renderAdminHeader();
-  clearTimeout(saveTimers[f]);
-  saveTimers[f] = setTimeout(async () => {
-    const { error } = await sb.from("coaching_clients").update({ [f]: inp.value }).eq("id", A.client.id);
-    if (error) toast("השמירה נכשלה, בדקי חיבור");
+  clearTimeout(saveTimers.client);
+  saveTimers.client = setTimeout(async () => {
+    try { await call("coaching_admin_save_client", { p_client: A.client.id, p_name: A.client.name, p_business: A.client.business, p_goal: A.client.goal }); }
+    catch { toast("השמירה נכשלה, בדקי חיבור"); }
   }, 600);
 }));
 
-$("copyLinkBtn").addEventListener("click", async () => {
-  try { await navigator.clipboard.writeText($("clientLink").textContent); toast("הקישור הועתק"); }
+$("copyBtn").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(loginText()); toast("הועתק: קישור, שם וקוד"); }
   catch { toast("לא הצלחתי להעתיק"); }
 });
-
+$("newCodeBtn").addEventListener("click", async () => {
+  if (!confirm("ליצור קוד חדש? הקוד הישן יפסיק לעבוד, ותצטרכי לשלוח לה את החדש.")) return;
+  try { A.client.code = await call("coaching_admin_new_code", { p_client: A.client.id }); renderAdminHeader(); toast("נוצר קוד חדש"); }
+  catch { toast("לא הצלחתי ליצור קוד"); }
+});
 $("deleteClientBtn").addEventListener("click", async () => {
   if (!confirm('למחוק את "' + (A.client.name || "ללא שם") + '" עם כל הפגישות והעדכונים? אי אפשר לשחזר.')) return;
-  const paths = A.meetings.map(m => m.summary_path).filter(Boolean);
-  if (paths.length) await sb.storage.from(BUCKET).remove(paths);
-  const { error } = await sb.from("coaching_clients").delete().eq("id", A.client.id);
-  if (error){ toast("המחיקה נכשלה"); return; }
-  loadClients();
+  try { await call("coaching_admin_delete_client", { p_client: A.client.id }); loadClients(); }
+  catch { toast("המחיקה נכשלה"); }
 });
 
 function meetingUpdates(m){ return A.updates.filter(u => u.meeting_id === m.id); }
@@ -555,22 +609,24 @@ function renderAdminMeetings(){
     return;
   }
   const m = A.meetings[aSel];
-  const save = async patch => {
-    Object.assign(m, patch);
-    const { error } = await sb.from("coaching_meetings").update(patch).eq("id", m.id);
-    if (error) toast("השמירה נכשלה, בדקי חיבור");
+  const save = async () => {
+    try {
+      await call("coaching_admin_save_meeting", {
+        p_meeting: m.id, p_date: m.date || null, p_note: m.note || "",
+        p_goals: (m.goals || []).filter(g => (g.text || "").trim()).map(g => ({ text: g.text.trim() }))
+      });
+    } catch { toast("השמירה נכשלה, בדקי חיבור"); }
   };
 
   const head = el("div", "meeting-head");
   head.append(el("h3", null, "פגישה " + m.n));
   const date = el("input"); date.type = "date"; date.value = m.date || "";
-  date.addEventListener("change", () => { save({ date: date.value }); renderAdminMeetings(); });
+  date.addEventListener("change", () => { m.date = date.value; save(); renderAdminMeetings(); });
   const del = el("button", "link-btn", "מחיקת הפגישה");
   del.addEventListener("click", async () => {
     if (!confirm("למחוק את פגישה " + m.n + " עם הסיכום והעדכונים שלה?")) return;
-    if (m.summary_path) await sb.storage.from(BUCKET).remove([m.summary_path]);
-    await sb.from("coaching_meetings").delete().eq("id", m.id);
-    aSel = -1; openClient(A.client.id);
+    try { await call("coaching_admin_delete_meeting", { p_meeting: m.id }); aSel = -1; openClient(A.client.id); }
+    catch { toast("המחיקה נכשלה"); }
   });
   head.append(date, del);
   box.appendChild(head);
@@ -588,17 +644,16 @@ function renderAdminMeetings(){
       const row = el("div", "goal-row");
       row.append(el("span", "gt", g.text));
       const st = el("span", "state");
-      const label = (GOAL_STATES.find(s => s[0] === g.state) || GOAL_STATES[0])[1];
-      const pill = el("span", "on", label); pill.dataset.s = g.state; st.appendChild(pill);
+      const pill = el("span", "on", (GOAL_STATES.find(s => s[0] === g.state) || GOAL_STATES[0])[1]);
+      pill.dataset.s = g.state; st.appendChild(pill);
       row.appendChild(st); upCard.appendChild(row);
     });
     [["מה התקדם", last.progress], ["איפה נתקעה", last.stuck], ["עדכון או שאלה לטוהר", last.note]].forEach(([t, v]) => {
-      upCard.appendChild(el("div", "field", null)).appendChild(el("label", null, t));
+      const f = el("div", "field"); f.appendChild(el("label", null, t)); upCard.appendChild(f);
       upCard.appendChild(el("div", "answer" + (v ? "" : " none"), v || "לא כתבה"));
     });
-    const unseen = ups.filter(u => !u.seen).map(u => u.id);
-    if (unseen.length){
-      sb.from("coaching_updates").update({ seen: true }).in("id", unseen).then(() => unseen.forEach(id => { const u = A.updates.find(x => x.id === id); if (u) u.seen = true; }));
+    if (ups.some(u => !u.seen)){
+      call("coaching_admin_mark_seen", { p_meeting: m.id }).then(() => ups.forEach(u => u.seen = true)).catch(() => {});
     }
   }
   box.appendChild(upCard);
@@ -606,25 +661,25 @@ function renderAdminMeetings(){
   // summary PDF
   const sCard = el("div", "card");
   sCard.appendChild(el("h3", null, "📎 סיכום הפגישה (PDF)"));
-  if (m.summary_path) sCard.appendChild(summaryBlock(m.summary_path, m.summary_name));
+  if (m.file) sCard.appendChild(fileBlock(m.id, m.file.name));
   const drop = el("div", "drop");
   drop.style.marginTop = "12px";
-  const up = el("button", "btn brown", m.summary_path ? "החלפת הסיכום" : "העלאת PDF של הסיכום");
-  const fileIn = el("input"); fileIn.type = "file"; fileIn.accept = "application/pdf,image/*"; fileIn.hidden = true;
+  const up = el("button", "btn brown", m.file ? "החלפת הסיכום" : "העלאת PDF של הסיכום");
+  const fileIn = el("input"); fileIn.type = "file"; fileIn.accept = "application/pdf,image/png,image/jpeg,image/webp"; fileIn.hidden = true;
   drop.append(up, el("span", "hint", "או גוררים את הקובץ לכאן"), fileIn);
   sCard.appendChild(drop);
   box.appendChild(sCard);
   const upload = async file => {
     if (!file) return;
-    if (!/^(application\/pdf|image\/)/.test(file.type)){ toast("אפשר להעלות PDF או תמונה"); return; }
+    if (!/^(application\/pdf|image\/(png|jpeg|webp))$/.test(file.type)){ toast("אפשר להעלות PDF או תמונה"); return; }
+    if (file.size > MAX_FILE){ toast("הקובץ גדול מדי (עד 10MB)"); return; }
     up.disabled = true; up.textContent = "מעלה...";
-    const ext = (file.name.match(/\.[a-z0-9]+$/i) || [".pdf"])[0].toLowerCase();
-    const path = crypto.randomUUID() + "/" + crypto.randomUUID() + ext;
-    const { error } = await sb.storage.from(BUCKET).upload(path, file, { contentType: file.type });
-    if (error){ up.disabled = false; up.textContent = "העלאת PDF של הסיכום"; toast("ההעלאה נכשלה"); return; }
-    if (m.summary_path) await sb.storage.from(BUCKET).remove([m.summary_path]);
-    await save({ summary_path: path, summary_name: file.name });
-    toast("הסיכום עלה, והלקוחה כבר רואה אותו");
+    const b64 = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.readAsDataURL(file); });
+    try {
+      await call("coaching_admin_set_file", { p_meeting: m.id, p_name: file.name, p_mime: file.type, p_data: b64 });
+      m.file = { name: file.name, mime: file.type };
+      toast("הסיכום עלה, והלקוחה כבר רואה אותו");
+    } catch { toast("ההעלאה נכשלה"); }
     renderAdminMeetings();
   };
   up.addEventListener("click", () => fileIn.click());
@@ -637,15 +692,13 @@ function renderAdminMeetings(){
   const gCard = el("div", "card");
   gCard.innerHTML = '<h3>היעדים שלה עד הפגישה הבאה</h3><p class="hint" style="margin-bottom:8px">היא תסמן ליד כל יעד: לא התחלתי, בתהליך או הושג. היעדים עוברים לבד לפגישה הבאה.</p>';
   const gl = el("div");
-  const saveGoals = () => save({ goals: m.goals.filter(g => (g.text || "").trim()).map(g => ({ text: g.text.trim() })) });
-  let goalTimer = null;
   m.goals = (m.goals || []).length ? m.goals : [{ text: "" }];
   m.goals.forEach((g, j) => {
     const row = el("div", "goal-row");
     const inp = el("input"); inp.type = "text"; inp.placeholder = "יעד..."; inp.value = g.text || "";
-    inp.addEventListener("input", () => { g.text = inp.value; clearTimeout(goalTimer); goalTimer = setTimeout(saveGoals, 600); });
+    inp.addEventListener("input", () => { g.text = inp.value; clearTimeout(saveTimers.meeting); saveTimers.meeting = setTimeout(save, 600); });
     const rm = el("button", "link-btn", "הסרה");
-    rm.addEventListener("click", () => { m.goals.splice(j, 1); saveGoals(); renderAdminMeetings(); });
+    rm.addEventListener("click", () => { m.goals.splice(j, 1); save(); renderAdminMeetings(); });
     row.append(inp, rm); gl.appendChild(row);
   });
   const add = el("button", "chip", "＋ הוספת יעד");
@@ -659,23 +712,24 @@ function renderAdminMeetings(){
   nCard.innerHTML = '<div class="field"><label for="aNote">הודעה ממך אליה</label><span class="hint">מופיעה לה בדף, מעל טופס העדכון (לא חובה)</span><textarea id="aNote"></textarea></div>';
   box.appendChild(nCard);
   const note = $("aNote"); note.value = m.note || ""; autoGrow(note);
-  let noteTimer = null;
-  note.addEventListener("input", () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => save({ note: note.value }), 600); });
+  note.addEventListener("input", () => { m.note = note.value; clearTimeout(saveTimers.meeting); saveTimers.meeting = setTimeout(save, 600); });
 }
 
 async function addMeeting(){
-  const prev = A.meetings[A.meetings.length - 1];
-  const n = prev ? prev.n + 1 : 1;
-  // goals carry over: the texts Tohar set last time
-  const goals = prev ? (prev.goals || []).filter(g => (g.text || "").trim()).map(g => ({ text: g.text })) : [];
-  const { error } = await sb.from("coaching_meetings").insert({ client_id: A.client.id, n, goals });
-  if (error){ toast("לא הצלחתי לפתוח פגישה"); return; }
-  aSel = A.meetings.length;
-  await openClient(A.client.id, true);
+  try {
+    await call("coaching_admin_add_meeting", { p_client: A.client.id });
+    aSel = A.meetings.length;
+    await openClient(A.client.id, true);
+  } catch { toast("לא הצלחתי לפתוח פגישה"); }
 }
 
 /* ---------- start ---------- */
-if (token) clientMode(); else adminMode();
+function start(){
+  if (setupKey && !S){ show("setupScreen"); return; }
+  if (!S){ show("loginScreen"); return; }
+  if (S.role === "admin") loadClients(); else clientMode();
+}
+start();
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")){
   navigator.serviceWorker.register("sw.js").catch(() => {});
